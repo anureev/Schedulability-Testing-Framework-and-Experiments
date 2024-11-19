@@ -384,8 +384,8 @@
 	   (return-from LeeShin2014 'unknown)))
      (return-from LeeShin2014 'feasible)))
 
-;; BaekKwakLee2020 Lemma 8 Page 110 (9)
-;; DOI: https://doi.org/10.1109/RTSS49844.2020.00020
+;; BaekLee2020 Lemma 8 Page 110 (9)
+;; DOI: https://doi.org/10.1109/LES.2020.2966681
 
 (defun nk-val (k ts)
   (- (length ts) k))
@@ -397,7 +397,7 @@
 		    #'(lambda (t1 t2) (> (task-C t1) (task-C t2)))))
      (return-from RHS6 (if (> dif (length LO)) "error" (- (task-C (nth dif LO)))))))
 
-(defun BaekKwakLee2020 (m n ts)
+(defun BaekLee2020 (m n ts)
   (prog (Ck Dk nk)
   (do ((k 1 (+ k 1)))
       ((> k n))
@@ -407,8 +407,8 @@
     (if (not (and
 	      (or (> nk (- m 1)) (< (min (RHS4 m n ts k) (RHS6 m ts k)) (+ (- Dk Ck) 1)))
 	      (or (< nk m) (< (RHS4 m n ts k) (+ (- Dk Ck) 1)))))
-	(return-from BaekKwakLee2020 'unknown)))
-  (return-from BaekKwakLee2020 'feasible)))
+	(return-from BaekLee2020 'unknown)))
+  (return-from BaekLee2020 'feasible)))
 
 ;; ChwaLee2022 Page 57 (3)
 ;; DOI: https://doi.org/10.1109/LES.2021.3112671
@@ -523,8 +523,8 @@
  (dgen1 100)
  (scale1 8)
  1000
- (list (make-alg :N "Alg1" :F #'Alg1) (make-alg :N "BaekKwakLee2020" :F #'BaekKwakLee2020))
- "m-ut-n-nm1-1000-Alg1-BaekKwakLee2020.csv")
+ (list (make-alg :N "Alg1" :F #'Alg1) (make-alg :N "BaekLee2020" :F #'BaekLee2020))
+ "m-ut-n-nm1-1000-Alg1-BaekLee2020.csv")
 
 (test-ut-m-n
  (mgen1 2 20 1)
@@ -533,8 +533,8 @@
  (dgen1 100)
  (scale2)
  1000
- (list (make-alg :N "Alg1" :F #'Alg1) (make-alg :N "BaekKwakLee2020" :F #'BaekKwakLee2020))
- "m-ut-n-nm1-1000-Alg1-BaekKwakLee2020.csv")
+ (list (make-alg :N "Alg1" :F #'Alg1) (make-alg :N "BaekLee2020" :F #'BaekLee2020))
+ "m-ut-n-nm1-1000-Alg1-BaekLee2020.csv")
 
 (test-m-n-without-ut
  (mgen1 2 20 1)
@@ -591,8 +591,8 @@
  (dgen1 100)
  (scale2)
  1000
- (list (make-alg :N "BaekKwakLee2020" :F #'BaekKwakLee2020))
- "m-ut-n-nm1-1000-BaekKwakLee2020-comma.csv")
+ (list (make-alg :N "BaekLee2020" :F #'BaekLee2020))
+ "m-ut-n-nm1-1000-BaekLee2020-comma.csv")
 
 (test-ut-m-n-dif
  (mgen1 2 20 1)
@@ -621,8 +621,8 @@
  (dgen1 100)
  (scale2)
  1000
- (list (make-alg :N "Alg1" :F #'Alg1) (make-alg :N "BaekKwakLee2020" :F #'BaekKwakLee2020))
- "m-ut-n-nm1-1000-Alg1-BaekKwakLee2020-comma.csv")
+ (list (make-alg :N "Alg1" :F #'Alg1) (make-alg :N "BaekLee2020" :F #'BaekLee2020))
+ "m-ut-n-nm1-1000-Alg1-BaekLee2020-comma.csv")
 
 (test-ut-m-n
  (mgen1 2 20 1)
@@ -631,8 +631,8 @@
  (dgen1 100)
  (scale1 3)
  30
- (list (make-alg :N "Alg1" :F #'Alg1) (make-alg :N "BaekKwakLee2020" :F #'BaekKwakLee2020))
- "m-ut-n-nm1-30-Alg1-BaekKwakLee2020-comma.1.csv")
+ (list (make-alg :N "Alg1" :F #'Alg1) (make-alg :N "BaekLee2020" :F #'BaekLee2020))
+ "m-ut-n-nm1-30-Alg1-BaekLee2020-comma.1.csv")
 
 (test-ut-m-n
  (mgen1 2 20 1)
@@ -641,8 +641,8 @@
  (dgen1 100)
  (scale1 3)
  100
- (list (make-alg :N "BaekKwakLee2020" :F #'BaekKwakLee2020))
- "m-ut-n-nm1-100-BaekKwakLee2020-comma.1.csv")
+ (list (make-alg :N "BaekLee2020" :F #'BaekLee2020))
+ "m-ut-n-nm1-100-BaekLee2020-comma.1.csv")
 
 (test-ut-m-n
  (mgen1 2 5 1)
