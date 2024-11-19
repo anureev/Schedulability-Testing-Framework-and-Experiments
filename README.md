@@ -1,1 +1,58 @@
-# Schedulability-Testing-Framework-and-Experiments
+### Polynomial Exact Schedulability and Infeasibility Test for Fixed-Priority Scheduling on Multiprocessor Platforms: Experiments
+
+This page represent experiments for evaluating the schedulability performance of our algorithms 1 and 2 of the paper "Polynomial Exact Schedulability and Infeasibility Test for Fixed-Priority Scheduling on Multiprocessor Platforms".
+
+To this end, we have developed a framework  in SBCL (file `SchedulingTestingExperiments.lsp`), a dialect of the Common Lisp language, which implements typical schedulability testing actions such as generating datasets, applying schedulability testing algorithms to them and saving statistics on their execution in `csv` format. 
+
+In the first experiment we compare the first algorithm with the feasibility testing algorithms from \[LeeShin2014,  https://doi.org/10.1109/TPDS.2013.2297098\] and \[BaekKwakLee2020, https://doi.org/10.1109/RTSS49844.2020.00020\] (the state-of-the-art schedulability test for NP-FP), respectively. Let us note that the dataset is built only from sets of tasks of power `m+1`, where `m` is the number of processors, since the exact algorithm `alg1` is defined only for this case. There is also one more restriction of our algorithm that `D_i = T_i`.
+
+To generate datasets for these algorithms, we use the `generate-taskset` and `generate-dataset` functions from our framework. The `generate-taskset` function implements the `UUnifast` algorithm \[DavisBurns2009, https://doi.org/10.1109/RTSS.2009.31, BiniButtazzo2005, https://doi.org/10.1007/s11241-005-0507-9\] and generates a set of tasks for the given parameters `n`, `ut`, `dgen` and `scale`, where `n` is the number of generated tasks, `ut` is a total utilization for this set, `dgen` is a function for generating `T_i` of tasks of this set, and `scale` is a function for reducing real values to a discrete domain. The `generate-dataset` function has one additional parameter `tss-size`, which indicates the number of generated sets of tasks in the dataset.
+
+The schedulability testing algorithms are implemented in the framework as functions of the parameters `m`, `n` and `ts`, where `m` is the number of processors, `ts` is the set of tasks (task list) and `n` is the number of tasks in this set (an optional but convenient parameter so as not to count the length of the task list). The functions implementing the algorithm 1 and the algorithms from \[2014\] and \[2020\] are named `ALg1`, `LeeShin2014` and `BaekKwakLee2020`, respectively. These functions return one of the following three values. The `feasible` value means that the algorithm has established that a set of tasks `ts` is
+feasible. Accordingly, the `infeasible` value means that the algorithm has established that `ts` is infeasible. And finally, the `unsat` value means that the algorithm failed to establish the feasibility/infeasibility of this set of tasks.
+
+To run the algorithms, the `test-ut-m-n` function is used with the parameters `mgen`, `ngen`, `ugen`, `dgen`, `scale`, `tss-size`, `algs` and `file`, where `mgen` is a function to generate a list of possible values of `m` (number of processors), `ngen` is a function to generate a list of possible values of `n` (the number of tasks in task sets), depending on `m`, `ugen` is a function for generating a list of possible `ut` values (total utilization), `file` is the file name for saving tabular data in csv format, `algs` is a list of pairs consisting of the names of algorithms (used in tabular data) and functions implementing algorithms. The other parameters are described above.
+
+This function generates a dataset according to its parameters, applies algorithms from `algs` and returns a `csv` file with the columns `Util` (utilization value), `ProcNum` (number of processors), `TaskNum` (number of tasks), `Alg` (name of the applied algorithm), `FasNum` (number of `feasible` values) `InfeasNum` (the number of `infeasible` values) and `UnkNum` (the number of `unsat` values).
+
+The dataset used to compare the above algorithms is generated for the following parameter values. The value of the `mgen` parameter is a function `(mgen1 2 20 1)` that generates all `m` starting from `2` in the amount of `20` with incrementing step `1`, i. e. the list of values `2, 3, \ldots, 21`. The value of `ngen` is a function `(gen2)` that returns a list of one value `m+1` (number `n` of tasks) for each `m` from in the amount of `20` with incrementing step `1(mgen1 2 20 1)`. The value of the `ugen` is a function `(ugen1 0.1 9 0.1)` in the amount of `20` with incrementing step that generates all `ut` starting from `0.1` in the amount of `9` with incrementing step `0.1`, i. e. the list of values `0.1, 0.2, \ldots, 0.9`. The value of the `dgen` parameter is a function `(dgen1 100)` that generate generates a random value (the value of `D`) from the range `[2, 100]`. The value of the `scale` parameter is a function `(scale1 8)` that cuts the real values of `D_i` and `C_i` generated by the algorithm to `8` decimal places. The `tss-size` parameter takes the value `1000` (the number of tasks in the dataset for the specified `m`, `n` and `ut`). The `algs` parameter takes one of the lists as a value
+
+    (list (make-alg :N "Alg1" :F #'Alg1) 
+      (make-alg :N "LeeShin2014" :F #'LeeShin2014))
+
+and
+
+    (list (make-alg :N "Alg1" :F #'Alg1) 
+      (make-alg :N "BaekKwakLee2020" :F #'BaekKwakLee2020),
+
+which run pairs of algorithms `Alg1` and `LeeShin2014` or `Alg1` and `BaekKwakLee2020`, respectively, for comparison. The `file` parameter is set to
+
+`m-ut-n-nm1-1000-Alg1-LeeShin2014.csv`
+
+and
+
+`m-ut-n-nm1-1000-Alg1-BaekKwakLee2020.csv`
+
+in these comparisons.
+
+The experiment has shown that under the constraint `n = m + 1`, the `ALg1` algorithm has better feasibility test results than the algorithms `LeeShin2014` and `BaekKwakLee2020`. The experimental results are shown in figures `m-ut-n-nm1-100-Alg1-LeeShin2014-bubble.png` and `m-ut-n-nm1-1000-Alg1-BaekKwakLee2020-bubble.png`, where the difference between the `FeasNum` column values of `ALg1` and these algorithms is considered, respectively, relative to the set values of `ut` and `m`.
+
+In the second experiment we compare the algorithm 2 with the infeasibility testing algorithm from \[ChwaLee2022, https://doi.org/10.1109/LES.2021.3112671\] (the state-of-the-art schedulability test for NP-FP), respectively. These algorithms are implemented by functions named `Alg2` and `ChwaLee2022`, respectively.
+
+In this case, there is no restriction that `n = m + 1`, but we impose a limit on the size of `C_i`, since the `ChwaLee2022` algorithm iterates through the values from `1` to `C_i`. The functions used above to generate the dataset result in large `C_i` values. Therefore, we have developed the `generate-taskset-without-ut` and `generate-dataset-without-ut` functions that satisfy this constraint. These functions do not depend on `ut`. The `generate-taskset-without-ut` function generates a set of tasks for the given parameters `n` and `Dmax`, where `n` is the number of generated tasks, and `Dmax` specifies maximal value of `D_i`s. Each task `i` takes a random `D_i` value from the range `[2 Dmax]` and a random `C_i` value from the range `[1, D_i]`.
+The `generate-dataset-without-ut` function has one additional parameter `tss-size`, which indicates the number of generated sets of tasks in the dataset. The constraint that `D_i = T_i` still holds.
+
+To run the algorithms, the `test-m-n-without-ut` function is used with the parameters `mgen`, `ngen`, `Dmax`, `tss-size`, `algs` and `file`. All these parameters are described above. The value of the `mgen` parameter is a function `(mgen1 2 20 1)`. The `Dmax` and `tss-size` parameters are set to `100`. The `algs` parameter takes the following lists as a value
+
+    (list (make-alg :N "Alg2" :F #'Alg2) 
+      (make-alg :N "ChwaLee2022" :F #'ChwaLee2022)).
+
+The `file` parameter is set to
+
+`m-ut-n-nm1-30-Alg2-ChwaLee2022-comma.csv`
+
+in this comparison.
+
+The experiment has shown that the `ALg2` algorithm has better infeasibility test results than the algorithm `ChwaLee2022`. The
+experimental results are shown in figure \[\], where the difference between the `InfeasNum` column values of `ALg2` and this algorithm is considered, relative to the set values of `m` and `n`.
+
