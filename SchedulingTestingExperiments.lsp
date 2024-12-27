@@ -7,6 +7,7 @@
 ;; Tasksets
 
 (defstruct (taskset) M N U UC tasks)
+
 #|
 M - number of processors
 N - number of tasks
@@ -150,114 +151,6 @@ DOI: https://doi.org/10.1109/LES.2020.2966681
 	(return-from BaekLee2020 'unknown)))
   (return-from BaekLee2020 'schedulable)))
 
-;; ChwaLee2022
-
-#|
-Page 57 (3)
-DOI: https://doi.org/10.1109/LES.2021.3112671
-|#
-
-(defun Wi (l task)
-  (let* ((Ci (task-C task))
-	 (Di (task-D task))
-	 (Ti Di)
-	 (floor1 (floor (/ l Ti))))
-    (+ (* floor1 Ci)
-       (max 0
-	    (min Ci
-		 (- (- l (* floor1 Ti))
-		    (- Di Ci)))))))
-
-(defun WiPrime (l task)
-  (let* ((Ci (task-C task))
-	(Di (task-D task))
-	(Ti Di)
-	(floor1 (floor (/ l Ti))))
-    (+ (* floor1 Ci) (min Ci (- l (* floor1 Ti))))))
-
-(defun Diff (m n HI-tasks tk alpha)
-  (prog (n1 Ck Dk (Diff-i-list nil))
-     (setf Ck (task-C tk))
-     (setf Dk (task-D tk))
-     (setf n1 (- n (length HI-tasks)))
-     (if (<= m n1) (return-from Diff 0))
-     (dolist (ti HI-tasks)
-       (setf Diff-i-list
-	     (cons (- (WiPrime (+ (- Dk Ck) alpha) ti)
-		      (Wi (+ (- Dk Ck) alpha) ti))
-		   Diff-i-list)))
-     (return-from Diff
-       (reduce #'+
-	       (subseq (sort Diff-i-list #'<) 0 (- m n1))))))
-
-#|
-(defun Diff (m n HI-tasks tk alpha)
-  (prog (n1 Ck Dk (Diff-i-list nil) (zero-list nil))
-     (setf Ck (task-C tk))
-     (setf Dk (task-D tk))
-     (setq n1 (- n (length HI-tasks)))
-     (do ((i 1 (+ i 1)))
-	 ((> i n1))
-       (setf zero-list (cons 0 zero-list)))
-     (dolist (ti HI-tasks)
-       (setf Diff-i-list
-	     (cons (- (WiPrime (+ (- Dk Ck) alpha) ti)
-		      (Wi (+ (- Dk Ck) alpha) ti))
-		   Diff-i-list)))
-     (return-from Diff
-       (reduce #'+
-	       (subseq (sort (append Diff-i-list zero-list) #'<) 0 m)))))
-|#
-
-(defun Eq3 (m n HI-tasks tk alpha)
-  (prog (Ck Dk sum1)
-     (setf Ck (task-C tk))
-     (setf Dk (task-D tk))
-     (setf sum1 0)
-     (dolist (task HI-tasks)
-       (setf sum1 (+ sum1 (Wi (+ (- Dk Ck) alpha) task))))
-     (return-from Eq3
-       (< (* m (+ (- Dk Ck) alpha))
-	  (+ alpha (Diff m n HI-tasks tk alpha) sum1)))))
-
-(defun delete-nth (i l)
-  (delete-if (constantly t) l :start (- i 1) :count 1))
-
-(defun not-Eq3-for-each-alpha (m n HI-tasks tk Ck)
-  (do ((alpha 1 (+ alpha 1)))
-      ((> alpha Ck) (return-from not-Eq3-for-each-alpha T))
-    (if (Eq3 m n HI-tasks tk alpha)
-	(return-from not-Eq3-for-each-alpha nil))))
-
-(defun ChwaLee2022 (ts)
-  (prog* ((m (taskset-M ts))
-	  (n (taskset-N ts))
-	  (tasks (taskset-tasks ts))
-	  (passed-nop-tasks nil)
-	  (nop-tasks tasks)
-	  (p-tasks nil)
-	  (HI-tasks nil) n1 tk Ck)
-     (do ((p n (- p 1)))
-	 ((< p 1) (return-from ChwaLee2022 'unknown))
-       (setq n1 (length nop-tasks))
-       (tagbody
-	 (do ((k 1 (+ k 1)))
-	     ((> k n1))
-	   (setq tk (car nop-tasks))
-	   (setq nop-tasks (cdr nop-tasks))
-	   (setf Ck (task-C tk))
-	   (setq Hi-tasks (append nop-tasks passed-nop-tasks))
-	   (if (not-Eq3-for-each-alpha m n HI-tasks tk Ck)
-	       (prog ()
-		  (setf p-tasks (cons tk p-tasks))
-		  (setq nop-tasks HI-tasks)
-		  (setq passed-nop-tasks nil)
-		  (go below)))
-	   (setf passed-nop-tasks (cons tk passed-nop-tasks)))
-	below)
-       (if (not (equal (length p-tasks) (+ (- n p) 1)))
-	   (return-from ChwaLee2022 'infeasible)))))
-
 ; Library for generating and checking datasets
 
 ;; Auxiliary functions
@@ -272,12 +165,12 @@ DOI: https://doi.org/10.1109/LES.2021.3112671
              table)
     alist))
 
-;; Random functions
+;;; Random functions
 
 (defun random-from-range (start end)
   (+ start (random (+ 1 (- end start)))))
 
-;; Uunifast algorithm
+;;; Uunifast algorithm
 
 #|
 Distributing total utilization into tasks
@@ -295,7 +188,11 @@ Distributing total utilization into tasks
      (setf u (cons sum-u u))
      (return u)))
 
-;; Serializing datasets (to lisp files)
+;; Serializing datasets
+
+#|
+to Lisp files
+|#
 
 (defun print-dataset (dataset path name)
   (with-open-file
@@ -386,7 +283,11 @@ Distributing total utilization into tasks
 	   (setf diff (cons taskset diff))))
      (return diff)))
 
-;; Serializing algorithm outputs (to csv files)
+;; Serializing algorithm outputs
+
+#|
+to csv files
+|#
 
 (defun print-algorithm-output-to-csv-uc-total (alg-output path alg-name parameter)
   (with-open-file
@@ -515,33 +416,33 @@ Distributing total utilization into tasks
 
 ; Experiments
 
-;;; Experiment1
+;; Experiment1
 
-;;;; Dataset Generating and Serializing
+;;; Dataset Generating and Serializing
 
 (setq dataset-val (generate-dataset1 u-list-val uc-list-val m-list-val 100 1000))
 
 (print-dataset dataset-val "experiments/" "dataset1")
 
-;;;; Alg1's Output Generating, Handling and Serializing
+;;; Alg1's Output Generating, Handling and Serializing
 
 (setq alg-output-val (apply-alg-to-dataset-uc #'Alg1 dataset-val uc-list-val 'schedulable))
 
 (print-algorithm-output-to-csv-uc-total alg-output-val "experiments/" "Alg1" "Sched. Ratio")
 
-;;;; LeeShin2014's Output Generating, Handling and Serializing
+;;; LeeShin2014's Output Generating, Handling and Serializing
 
 (setq alg-output-val (apply-alg-to-dataset-uc #'LeeShin2014 qq uc-list-val 'schedulable))
 
 (print-algorithm-output-to-csv-uc-total alg-output-val "experiments/" "LeeShin2014" "Sched. Ratio")
 
-;;;; BaekLee2020's Output Generating, Handling and Serializing
+;;; BaekLee2020's Output Generating, Handling and Serializing
 
 (setq alg-output-val (apply-alg-to-dataset-uc #'BaekLee2020 qq uc-list-val 'schedulable))
 
 (print-algorithm-output-to-csv-uc-total alg-output-val "experiments/" "BaekLee2020" "Sched. Ratio")
 
-;;; Experiment2
+;; Experiment2
 
 (setq dataset-val (generate-dataset2 u-list-val uc-list-val m-list-val 2 100 100))
 
